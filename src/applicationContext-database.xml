@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- Spring 数据库相关配置 放在这里 -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+    <!--主库-->
+    <bean id = "dataSource1" class = "com.mysql.jdbc.jdbc2.optional.MysqlDataSource">
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306"/>
+        <property name = "user" value = "root"/>
+        <property name = "password" value = ""/>
+        <property name="autoReconnect" value="true"/>
+        <property name="useUnicode"  value="true"/>
+        <property name="characterEncoding" value="UTF-8"/>
+    </bean>
+
+    <bean id="dataSource2" class="oracle.jdbc.pool.OracleDataSource" >
+        <property name="URL"> <value><![CDATA[jdbc:oracle:thin:@192.168.1.50:1521:orcl3]]></value></property>
+        <property name="user" value="system"/>
+        <property name="password" value="apexsoft"/>
+    </bean>
+
+    <bean id="dataSource" class="com.microsoft.msdn.util.database.DynamicDataSource">
+        <property name="targetDataSources">
+            <map key-type="java.lang.String">
+
+            </map>
+        </property>
+        <property name="defaultTargetDataSource" ref="dataSource1"/>
+    </bean>
+
+    <bean id="sessionFactoryHibernate" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">com.microsoft.msdn.util.database.ExtendedMySQLDialect</prop>
+                <prop key="hibernate.show_sql">${SHOWSQL}</prop>
+                <prop key="hibernate.format_sql">${SHOWSQL}</prop>
+                <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate4.SpringSessionContext</prop>
+                <prop key="query.factory_class">org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory</prop>
+
+                <!--
+                    为了解决ClassNotFoundException:org.hibernate.hql.ast.HqlToken
+                    该异常会在Weblogic上发生
+		    先加query.factory_class
+                    针对Weblogic10
+			1.需要拷贝antlr.jar到域目录\lib目录下
+			2.编辑startWeblogic.cmd，
+				在set CLASSPATH前面加set PRE_CLASSPATH=% DOMAIN_HOME%\lib\antlr-2.7.6.jar
+				在set CLASSPATH之后加上下面一句：set CLASSPATH=%PRE_CLASSPATH%;%SAVE_CLASSPATH%ATH%
+		    针对Weblogic8
+			1.需要拷贝antlr.jar到%WL_HOME%\server\lib下
+			2.编辑startWeblogic.cmd，
+				在set CLASSPATH之前加上下面一句：
+         			set PRE_CLASSPATH=%WL_HOME%\server\lib\antlr-2.7.5H3.jar;
+         			在set CLASSPATH之后加上下面一句：
+         			set CLASSPATH=%PRE_CLASSPATH%;%CLASSPATH% 
+                -->
+            </props>
+        </property>
+        <property name="mappingLocations">
+            <list>
+
+            </list>
+        </property>
+    </bean>
+
+    <bean id="hibernateTemplate" class="org.springframework.orm.hibernate4.HibernateTemplate">
+        <property name="sessionFactory" ref="sessionFactoryHibernate"/>
+    </bean>
+
+    <bean id="dataSourceExchange" class="com.microsoft.msdn.util.database.DataSourceExchange"/>
+
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactoryHibernate"/>
+    </bean>
+
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="insert*" propagation="NESTED" rollback-for="Exception"/>
+            <tx:method name="add*" propagation="NESTED" rollback-for="Exception"/>
+            <tx:method name="update*" propagation="NESTED" rollback-for="Exception"/>
+            <tx:method name="modify*" propagation="NESTED" rollback-for="Exception"/>
+            <tx:method name="edit*" propagation="NESTED" rollback-for="Exception"/>
+            <tx:method name="del*" propagation="NESTED" rollback-for="Exception"/>
+            <tx:method name="save*" propagation="NESTED" rollback-for="Exception"/>
+            <tx:method name="get*" read-only="true"/>
+            <tx:method name="find*" read-only="true"/>
+            <tx:method name="query*" read-only="true"/>
+            <tx:method name="search*" read-only="true"/>
+            <tx:method name="select*" read-only="true"/>
+            <tx:method name="count*" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="service" expression="execution(* com.microsoft.msdn..*.service.*.*(..))"/>
+        <!-- 关键配置，切换数据源一定要比持久层代码更先执行（事务也算持久层代码） -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="service" order="2"/>
+        <aop:advisor advice-ref="dataSourceExchange" pointcut-ref="service" order="1"/>
+    </aop:config>
+
+    <bean id="basicHibernateDao" class="com.microsoft.msdn.util.database.hibernate.BasicHibernateDaoImpl" abstract="true">
+        <property name="template" ref="hibernateTemplate"/>
+    </bean>
+</beans>

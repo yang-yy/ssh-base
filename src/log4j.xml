@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration PUBLIC "-//WAPFORUM//DTD WML 1.3//EN" "log4j.dtd">
+
+<log4j:configuration  debug="true" threshold="all">
+    <!--renderer renderedClass="cdata" renderingClass="cdata" /-->
+    <!--控制台输出定义 -->
+    <appender class="org.apache.log4j.ConsoleAppender" name="CONSOLE">
+        <param name="Target" value="System.out" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%F:%L] %d{yyyy-MM-dd HH:mm:ss} %-5p %c %x - %m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="levelMin" value="warn" />
+        </filter>
+    </appender>
+    <!--循环文件输出定义 -->
+    <appender class="org.apache.log4j.RollingFileAppender" name="ROLLING_FILE">
+        <param name="File" value="${catalina.base}/logs/eimp.log" />
+        <param name="Append" value="true" />
+        <param name="MaxFileSize" value="1MB"/>
+        <param name="MaxBackupIndex" value="2"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%F:%L] %d{yyyy-MM-dd HH:mm:ss} %-5p %c %x - %m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="levelMin" value="info" />
+        </filter>
+    </appender>
+    <!--日循环文件输出定义 -->
+    <appender class="org.apache.log4j.DailyRollingFileAppender" name="A1">
+        <param name="File" value="SampleMessages.log4j" />
+        <layout class="org.apache.log4j.xml.XMLLayout">
+            <!--param name="ConversionPattern" value="[framework](%F:%L) %d{dd HH:mm:ss} -%-4r [%t] %-5p %c %x - %m%n" /-->
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="levelMin" value="warn" />
+        </filter>
+    </appender>
+
+
+    <!--过滤器定义 -->
+    <category additivity="true" name="org.apache.log4j.xml">
+	<!-- param name="cdata" value="cdata" /-->
+        <!--过滤日志等级 -->
+        <priority value="warn" />
+        <!--定义该过滤器用于哪个输出器 -->
+        <!-- appender-ref ref="nmtoken" /-->
+    </category>
+
+    <category additivity="true" name="micropackage.data.ObjectSql">
+	<!-- param name="cdata" value="cdata" /-->
+        <priority value="warn" />
+        <!-- appender-ref ref="nmtoken" /-->
+    </category>
+
+    <category name="com.opensymphony.xwork2.ognl.OgnlValueStack">
+        <priority value="error"/>
+    </category>
+
+    <root>
+        <priority value="info" />
+        <!--定义激活的输出器 -->
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLING_FILE"/>
+    </root>
+</log4j:configuration>

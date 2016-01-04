@@ -1,0 +1,30 @@
+=================================================================验证和Token的拦截器相关
+com.cnfol.util.action.interceptor.JSONValidationInterceptor
+        为S2自带JSON拦截器的变体，主要用于获取AJAX Action的验证信息
+        AJAX Action 标志：请求参数中带有struts.enableJSONValidation=true
+
+com.cnfol.util.action.interceptor.TokenSessionStoreInterceptor
+        为S2自带Token拦截器的变体，主要用于避免AJAX Action的Token的拦截
+        AJAX Action 标志：请求参数中带有struts.enableJSONValidation=true
+        如果不是AJAX Action，要避免被Token拦截，需要在方法上加NoToken注解
+
+com.cnfol.util.action.interceptor.AnnotationValidationInterceptor
+com.cnfol.util.action.interceptor.ValidationInterceptor
+com.cnfol.util.action.interceptor.AnnotationActionValidatorManager
+        为S2自带的注解和普通注解验证拦截器的变体，主要用于部分Action方法不需要加入父Action的验证器
+        如果这个Action的方法，确实不需要加入父Action验证器，请在方法上加NoFatherValidation注解
+
+com.cnfol.util.action.NoToken
+        注解
+
+com.cnfol.util.action.NoFatherValidation
+        注解
+
+com.cnfol.util.action.validator.*
+        自定义验证器，用于S2的验证拦截器
+
+=================================================================其它
+com.cnfol.util.action.interceptor.ClearErrorInterceptor
+        新的请求过来时，清除Action中的所有错误
+com.cnfol.util.action.interceptor.TrimInterceptor
+        清除请求参数的所有空格

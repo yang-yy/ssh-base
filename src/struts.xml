@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<constant name="struts.action.extension" value="shtml" />
+	<constant name="struts.ognl.allowStaticMethodAccess" value="true" />
+	<constant name="struts.i18n.encoding" value="UTF-8" />
+	<!--<constant name="struts.freemarker.manager.classname" value="freemarkerManager" />-->
+	<constant name="struts.ui.theme" value="simple" />
+    <constant name="struts.multipart.maxSize" value="5242880" />
+	<constant name="struts.multipart.saveDir" value="/temp" />
+
+	<include file="struts-default.xml" />
+
+	<package name="msdn" extends="struts-default" abstract="true"
+		namespace="/">
+		<!--<result-types>-->
+			<!--<result-type name="json" class="org.apache.struts2.json.JSONResult" />-->
+		<!--</result-types>-->
+		<interceptors>
+			<interceptor name="clearError"
+				class="com.microsoft.msdn.util.action.interceptor.ClearErrorInterceptor" />
+			<interceptor name="trim"
+				class="com.microsoft.msdn.util.action.interceptor.TrimInterceptor" />
+			<interceptor-stack name="defaultStack">
+				<interceptor-ref name="clearError" />
+                <interceptor-ref name="exception"/>
+                <interceptor-ref name="alias"/>
+                <interceptor-ref name="i18n"/>
+                <interceptor-ref name="checkbox"/>
+                <interceptor-ref name="datetime"/>
+                <interceptor-ref name="multiselect"/>
+                <interceptor-ref name="params">
+                    <param name="excludeParams">^action:.*,^method:.*</param>
+                </interceptor-ref>
+                <interceptor-ref name="servletConfig"/>
+                <interceptor-ref name="prepare"/>
+                <interceptor-ref name="chain"/>
+                <interceptor-ref name="modelDriven"/>
+                <interceptor-ref name="fileUpload"/>
+                <interceptor-ref name="staticParams"/>
+                <interceptor-ref name="actionMappingParams"/>
+                <interceptor-ref name="params">
+                    <param name="excludeParams">^action:.*,^method:.*</param>
+                </interceptor-ref>
+                <interceptor-ref name="trim"/>
+                <interceptor-ref name="conversionError"/>
+                <interceptor-ref name="validation">
+                    <param name="excludeMethods">input,back,cancel,browse</param>
+                </interceptor-ref>
+                <interceptor-ref name="workflow">
+                    <param name="excludeMethods">input,back,cancel,browse</param>
+                </interceptor-ref>
+
+
+            </interceptor-stack>
+		</interceptors>
+
+		<default-interceptor-ref name="defaultStack" />
+
+		<global-results>
+			<result name="error">/WEB-INF/error.jsp</result>
+			<result name="invalid.token">/WEB-INF/wait.jsp</result>
+			<!--<result name="ajaxerror" type="json">-->
+				<!--<param name="includeProperties">ajaxErrorMessage</param>-->
+				<!--<param name="ignoreHierarchy">false</param>-->
+				<!--<param name="statusCode">2</param>-->
+			<!--</result>-->
+			<!--<result name="ajaxsuccess" type="json">-->
+				<!--<param name="excludeWildcards">*</param>-->
+				<!--<param name="statusCode">3</param>-->
+			<!--</result>-->
+			<!--<result name="ajaxFileTypeError" type="json">-->
+				<!--<param name="excludeWildcards">*</param>-->
+				<!--<param name="statusCode">4</param>-->
+			<!--</result>-->
+		</global-results>
+	</package>
+
+	<include file="/com/microsoft/msdn/index/struts-index.xml"/>
+</struts>

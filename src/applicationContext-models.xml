@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util
+       http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+    <!-- Service层基础Bean -->
+    <bean id="baseService" class="com.microsoft.msdn.util.service.BaseServiceImpl" abstract="true">
+        <property name="threadPool" ref="threadPool"/>
+        <property name="gwIp" value="${gwIP}"/>
+        <property name="userId" value="${UserID}"/>
+        <property name="tableId" value="${TableID}"/>
+        <property name="channelTable" value="${ChannelTable}"/>
+        <property name="tableAccessKey" value="${TypeAccessKey}"/>
+        <property name="month" value="${IsMonth}"/>
+        <property name="status" value="${Status}"/>
+        <property name="productNum" value="${ProductNum}"/>
+    </bean>
+
+    <!-- Action层基础Bean -->
+    <bean id="baseAction" class="com.microsoft.msdn.util.action.BaseActionImpl" abstract="true">
+        <property name="threadPool" ref="threadPool"/>
+    </bean>
+
+    <bean id="connectionConfig" class="org.apache.http.config.ConnectionConfig" factory-method="custom">
+        <property name="charset">
+            <util:constant static-field="org.apache.http.Consts.UTF_8"/>
+        </property>
+    </bean>
+
+    <bean id="socketConfig" class="org.apache.http.config.SocketConfig" factory-method="custom">
+        <property name="soTimeout" value="#{5*60*1000}"/>
+    </bean>
+
+    <bean id="requestConfig" class="org.apache.http.client.config.RequestConfig" factory-method="custom">
+        <property name="connectTimeout" value="#{5*60*1000}"/>
+        <property name="socketTimeout" value="#{5*60*1000}"/>
+    </bean>
+
+    <bean id="userAgent" class="java.lang.String">
+        <constructor-arg index="0" type="java.lang.String">
+            <value>Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36</value>
+        </constructor-arg>
+    </bean>
+
+    <!--默认使用PoolingHttpClientConnectionManager -->
+    <bean id="clientBuilder" class="org.apache.http.impl.client.HttpClients" factory-method="custom">
+        <!--将写入PoolingHttpClientConnectionManager 的maxTotal-->
+        <property name="maxConnTotal" value="1000"/>
+        <!--将写入PoolingHttpClientConnectionManager的 defaultMaxPerRoute-->
+        <property name="maxConnPerRoute" value="1000"/>
+        <!--将写入PoolingHttpClientConnectionManager的 defaultConnectionConfig-->
+        <property name="defaultConnectionConfig">
+            <bean factory-bean="connectionConfig" factory-method="build"/>
+        </property>
+        <!--将写入PoolingHttpClientConnectionManager的 defaultSocketConfig-->
+        <property name="defaultSocketConfig">
+            <bean factory-bean="socketConfig" factory-method="build"/>
+        </property>
+        <property name="defaultRequestConfig">
+            <bean factory-bean="requestConfig" factory-method="build"/>
+        </property>
+        <property name="userAgent" ref="userAgent"/>
+        <property name="defaultHeaders">
+            <list>
+                <bean class="org.apache.http.message.BasicHeader">
+                    <constructor-arg name="name">
+                        <util:constant static-field="org.apache.http.HttpHeaders.ACCEPT_CHARSET"/>
+                    </constructor-arg>
+                    <constructor-arg name="value" value="UTF-8"/>
+                </bean>
+                <bean class="org.apache.http.message.BasicHeader">
+                    <constructor-arg name="name">
+                        <util:constant static-field="org.apache.http.HttpHeaders.ACCEPT_ENCODING"/>
+                    </constructor-arg>
+                    <constructor-arg name="value" value="gzip,deflate"/>
+                </bean>
+                <bean class="org.apache.http.message.BasicHeader">
+                    <constructor-arg name="name">
+                        <util:constant static-field="org.apache.http.HttpHeaders.USER_AGENT"/>
+                    </constructor-arg>
+                    <constructor-arg name="value" ref="userAgent"/>
+                </bean>
+
+                <!--<bean class="org.apache.http.message.BasicHeader">-->
+                    <!--<constructor-arg name="name">-->
+                        <!--<util:constant static-field="org.apache.http.HttpHeaders.CONTENT_TYPE"/>-->
+                    <!--</constructor-arg>-->
+                    <!--<constructor-arg name="value" value="text/html;charset=UTF-8"/>-->
+                <!--</bean>-->
+            </list>
+        </property>
+    </bean>
+
+    <bean id="httpClient" factory-bean="clientBuilder" factory-method="build" destroy-method="close"/>
+
+    <bean id="htmlUtil" class="com.microsoft.msdn.util.HtmlUtils"/>
+</beans>
